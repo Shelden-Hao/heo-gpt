@@ -1,9 +1,9 @@
 import Navigation from "@/components/home/Navigation";
-import Main from "@/components/home/Main";
+import Main from "@/components/home/Main"
 
 export default function Home() {
     return (
-        <div className="h-full flex">
+        <div className="h-full flex dark">
             <Navigation />
             <Main />
         </div>
