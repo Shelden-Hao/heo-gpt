@@ -3,8 +3,9 @@
 import React, {createContext, Dispatch, ReactNode, SetStateAction, useContext, useMemo, useState} from 'react';
 
 type State = {
-    displayNavigation: boolean
-}
+    displayNavigation: boolean;
+    themeMode: 'light' | 'dark';
+};
 
 type AppContextProps = {
     state: State
@@ -18,7 +19,7 @@ export function useAppContext() {
 }
 
 export default function AppContextProvider({children}: { children: ReactNode }) {
-    const [state, setState] = useState({displayNavigation: true})
+    const [state, setState] = useState<State>({displayNavigation: true, themeMode: 'light'})
     const contextValue = useMemo(() => {
         return {state, setState}
     }, [state, setState])
