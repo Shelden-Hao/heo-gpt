@@ -1,7 +1,7 @@
 import React, {useMemo, useState} from 'react';
 import {Chat} from "@/types/chat";
-import {PiChatBold} from "react-icons/pi";
 import {groupByDate} from "@/common/util";
+import ChatItem from "@/components/home/Navigation/ChatItem";
 
 function ChatList() {
     const [chatList, setChatList] = useState<Chat[]>([
@@ -82,23 +82,11 @@ function ChatList() {
                             {
                                 list.map(item => {
                                     const selected = selectedChat === item
-                                    return (<li
-                                        onClick={() => {
-                                            setSelectedChat(item)
-                                        }}
-                                        className={`group flex items-center p-3 space-x-3 cursor-pointer rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 ${
-                                            selected ? 'bg-gray-100 dark:bg-gray-800' : ''
-                                        }`} key={item.id}>
-                                        <div><PiChatBold/></div>
-                                        <div className={" relative flex-1 whitespace-nowrap overflow-hidden"}>
-                                            {item.title}
-                                            <span
-                                                className={`group-hover:dark:from-gray-800 absolute right-0 inset-y-0 w-8 bg-gradient-to-l ${
-                                                    selected ? 'from-gray-100 dark:from-gray-800' : 'from-gray-50 dark:from-gray-900'
-                                                }`}></span>
-                                        </div>
-
-                                    </li>)
+                                    return (
+                                        <ChatItem key={item.id} item={item} selected={selected} onSelected={(chat) => {
+                                            setSelectedChat(chat)
+                                        }} />
+                                    )
                                 })
                             }
                         </ul>
