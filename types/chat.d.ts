@@ -3,3 +3,9 @@ export interface Chat {
     title: string;
     updateTime: number;
 }
+
+export interface Message {
+    id: string
+    role: "user" | "assistant" // 区别用户还是chatgpt
+    content: string
+}
