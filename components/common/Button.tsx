@@ -3,7 +3,7 @@ import {IconType} from "react-icons";
 
 type ButtonProps = {
     icon?: IconType,
-    variant?: 'default' | 'outline' | 'text', // default 带背景不带边框 outline 带背景带边框  text 都不带
+    variant?: 'default' | 'outline' | 'text' | 'primary', // default 带背景不带边框 outline 带背景带边框  text 都不带
 } & ComponentPropsWithRef<'button'>;
 
 function Button({children, className = "", icon: Icon, variant = 'default', ...props}: ButtonProps) {
@@ -14,13 +14,15 @@ function Button({children, className = "", icon: Icon, variant = 'default', ...p
                 variant === "default"
                     ? "text-black dark:text-gray-300 bg-gray-50 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-900"
                     : variant === "outline"
-                    ? "border border-gray-300 dark:border-gray-600 text-black dark:text-gray-300 bg-gray-50 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
-                    : "text-black dark:text-gray-300 bg-transparent hover:bg-gray-200 dark:hover:bg-gray-700"
+                        ? "border border-gray-300 dark:border-gray-600 text-black dark:text-gray-300 bg-gray-50 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+                        : variant === "primary"
+                            ? "bg-primary-500 text-white hover:bg-primary-600 hover:text-white shadow-sm"
+                            : "text-black dark:text-gray-300 bg-transparent hover:bg-gray-200 dark:hover:bg-gray-700"
             }
             ${className}`}
             {...props}
         >
-            {Icon && <Icon className={`text-lg ${children ? "mr-1" : ""}`} />}
+            {Icon && <Icon className={`text-lg ${children ? "mr-1" : ""}`}/>}
             {children}
         </button>
     );
