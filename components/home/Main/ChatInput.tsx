@@ -23,9 +23,23 @@ export default function ChatInput() {
             role: 'user',
             content: messageText
         }
-        const messages = messageList.concat([message]);
-        const body: MessageRequestBody = {messages, model: currentModel};
         dispatch({type: ActionType.ADD_MESSAGE, message})
+        const messages = messageList.concat([message]);
+        doSend(messages)
+    }
+
+    async function resend() {
+        const messages = [...messageList];
+        const lastMessage = messages[messages.length - 1]
+        if (lastMessage.role === 'assistant' && messages.length !== 0) {
+            dispatch({type: ActionType.REMOVE_MESSAGE, message: lastMessage})
+            messages.splice(messages.length - 1, 1)
+        }
+        doSend(messages)
+    }
+
+    async function doSend(messages: Message[]) {
+        const body: MessageRequestBody = {messages, model: currentModel};
         setMessageText("")
         const controller = new AbortController()
         const response = await fetch("/api/chat", {
@@ -97,7 +111,7 @@ export default function ChatInput() {
                                     icon={FiSend}
                                     variant='primary'
                                     className='font-medium'
-                                    onClick={send}
+                                    onClick={resend}
                                 >
                                     重新生成
                                 </Button>
