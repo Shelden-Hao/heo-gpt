@@ -8,6 +8,7 @@ export interface Message {
     id: string
     role: "user" | "assistant" // 区别用户还是chatgpt
     content: string
+    chatId: string
 }
 
 export interface MessageRequestBody {

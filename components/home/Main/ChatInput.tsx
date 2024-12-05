@@ -17,12 +17,29 @@ export default function ChatInput() {
         dispatch
     } = useAppContext()
 
-    async function send() {
-        const message: Message = {
-            id: uuidv4(),
-            role: 'user',
-            content: messageText
+    async function createOrUpdateMessage(message: Message) {
+        const response = await fetch("/api/message/update", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(message)
+        })
+        if (!response.ok) {
+            console.log(response.statusText)
+            return
         }
+        const {data} = await response.json()
+        return data.message
+    }
+
+    async function send() {
+        const message: Message = await createOrUpdateMessage({
+            id: "",
+            role: "user",
+            content: messageText,
+            chatId: ""
+        })
         dispatch({type: ActionType.ADD_MESSAGE, message})
         const messages = messageList.concat([message]);
         doSend(messages)
@@ -61,7 +78,8 @@ export default function ChatInput() {
         const responseMessage: Message = {
             id: uuidv4(),
             role: "assistant",
-            content: ''
+            content: '',
+            chatId: ""
         }
         dispatch({type: ActionType.ADD_MESSAGE, message: responseMessage})
         dispatch({type: ActionType.UPDATE, field: "streamingId", value: responseMessage.id})
