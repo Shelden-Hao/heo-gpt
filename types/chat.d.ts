@@ -9,3 +9,8 @@ export interface Message {
     role: "user" | "assistant" // 区别用户还是chatgpt
     content: string
 }
+
+export interface MessageRequestBody {
+    messages: Message[]
+    model: string
+}
