@@ -3,7 +3,7 @@ import {MdRefresh} from "react-icons/md"
 import {PiLightningFill, PiStopBold} from "react-icons/pi"
 import {FiSend} from "react-icons/fi"
 import TextareaAutoSize from "react-textarea-autosize"
-import {useState} from "react";
+import {useRef, useState} from "react";
 import {v4 as uuidv4} from 'uuid';
 import {Message, MessageRequestBody} from "@/types/chat";
 import {useAppContext} from "@/components/AppContext";
@@ -11,6 +11,7 @@ import {ActionType} from "@/reducers/AppReducers";
 
 export default function ChatInput() {
     const [messageText, setMessageText] = useState("")
+    const stopRef = useRef(false);
     const {
         state: {messageList, currentModel, streamingId},
         dispatch
@@ -26,12 +27,14 @@ export default function ChatInput() {
         const body: MessageRequestBody = {messages, model: currentModel};
         dispatch({type: ActionType.ADD_MESSAGE, message})
         setMessageText("")
+        const controller = new AbortController()
         const response = await fetch("/api/chat", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
+            signal: controller.signal  // 可以使用 AbortController 取消请求
         })
         if (!response.ok) {
             console.log(response.statusText)
@@ -53,7 +56,12 @@ export default function ChatInput() {
         let done = false
         let content = ''
         while (!done) {
-            const result = await reader.read()
+            if (stopRef.current) {
+                stopRef.current = false
+                controller.abort()
+                break
+            }
+            const result = await reader.read();
             done = result.done
             const chunk = decoder.decode(result.value)
             content += chunk
@@ -78,6 +86,9 @@ export default function ChatInput() {
                                     icon={PiStopBold}
                                     variant='primary'
                                     className='font-medium'
+                                    onClick={() => {
+                                        stopRef.current = true
+                                    }}
                                 >
                                     停止生成
                                 </Button>
