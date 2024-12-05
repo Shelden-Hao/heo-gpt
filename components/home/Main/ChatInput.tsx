@@ -12,6 +12,7 @@ import {ActionType} from "@/reducers/AppReducers";
 export default function ChatInput() {
     const [messageText, setMessageText] = useState("")
     const stopRef = useRef(false);
+    const chatIdRef = useRef("")
     const {
         state: {messageList, currentModel, streamingId},
         dispatch
@@ -30,7 +31,25 @@ export default function ChatInput() {
             return
         }
         const {data} = await response.json()
-        return data.message
+        if (!chatIdRef.current) {
+            chatIdRef.current = data.message.chatId;
+        }
+        return data.message;
+    }
+
+    async function deleteMessage(id: string) {
+        const response = await fetch(`/api/message/delete?id=${id}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+        if (!response.ok) {
+            console.log(response.statusText)
+            return
+        }
+        const { code } = await response.json()
+        return code === 0
     }
 
     async function send() {
@@ -38,7 +57,7 @@ export default function ChatInput() {
             id: "",
             role: "user",
             content: messageText,
-            chatId: ""
+            chatId: chatIdRef.current
         })
         dispatch({type: ActionType.ADD_MESSAGE, message})
         const messages = messageList.concat([message]);
@@ -49,7 +68,12 @@ export default function ChatInput() {
         const messages = [...messageList];
         const lastMessage = messages[messages.length - 1]
         if (lastMessage.role === 'assistant' && messages.length !== 0) {
-            dispatch({type: ActionType.REMOVE_MESSAGE, message: lastMessage})
+            const result = await deleteMessage(lastMessage.id)
+            if (!result) {
+                console.log("delete error")
+                return
+            }
+            dispatch({type: ActionType.REMOVE_MESSAGE, message: lastMessage});
             messages.splice(messages.length - 1, 1)
         }
         doSend(messages)
@@ -75,12 +99,12 @@ export default function ChatInput() {
             console.log("body error")
             return
         }
-        const responseMessage: Message = {
-            id: uuidv4(),
+        const responseMessage: Message = await createOrUpdateMessage({
+            id: "",
             role: "assistant",
-            content: '',
-            chatId: ""
-        }
+            content: "",
+            chatId: chatIdRef.current
+        })
         dispatch({type: ActionType.ADD_MESSAGE, message: responseMessage})
         dispatch({type: ActionType.UPDATE, field: "streamingId", value: responseMessage.id})
         const reader = response.body.getReader()
@@ -102,6 +126,10 @@ export default function ChatInput() {
                 message: {...responseMessage, content}
             })
         }
+        createOrUpdateMessage({
+            ...responseMessage,
+            content
+        })
         dispatch({type: ActionType.UPDATE, field: "streamingId", value: ""})
         setMessageText("")
     }
