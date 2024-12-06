@@ -3,6 +3,9 @@ import {Chat} from "@/types/chat";
 import {PiChatBold, PiTrashBold} from "react-icons/pi";
 import {AiOutlineEdit} from "react-icons/ai";
 import {MdCheck, MdClose, MdDeleteOutline} from "react-icons/md";
+import {useEventBusContext} from "@/components/EventBusContext";
+import {useAppContext} from "@/components/AppContext";
+import {ActionType} from "@/reducers/AppReducers";
 
 type Props = {
     item: Chat;
@@ -13,10 +16,60 @@ type Props = {
 function ChatItem({item, selected, onSelected}: Props) {
     const [editing, setEditing] = useState(false)
     const [deleting, setDeleting] = useState(false)
+    const [title, setTitle] = useState(item.title)
+    const { publish } = useEventBusContext()
+    const { dispatch } = useAppContext()
+
     useEffect(() => {
         setEditing(false)
         setDeleting(false)
     }, [selected]);
+
+    const updateChat = async () => {
+        const response = await fetch("/api/chat/update", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ id: item.id, title })
+        })
+        if (!response.ok) {
+            console.log(response.statusText)
+            return
+        }
+        const { code } = await response.json()
+        if (code === 0) {
+            publish("chatList")
+            dispatch({
+                type: ActionType.UPDATE,
+                field: "selectedChat",
+                value: null
+            })
+        }
+    }
+
+    async function deleteChat() {
+        const response = await fetch(`/api/chat/delete?id=${item.id}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+        if (!response.ok) {
+            console.log(response.statusText)
+            return
+        }
+        const { code } = await response.json()
+        if (code === 0) {
+            publish("chatList")
+            dispatch({
+                type: ActionType.UPDATE,
+                field: "selectedChat",
+                value: null
+            })
+        }
+    }
+
     return (
         <li
             onClick={() => {
@@ -30,7 +83,8 @@ function ChatItem({item, selected, onSelected}: Props) {
                 <input
                     autoFocus={true}
                     className={"flex-1 min-w-0 bg-transparent outline-none"}
-                    defaultValue={item.title}
+                    value={title}
+                    onChange={e => setTitle(e.target.value)}
                 />
             ) : (
                 <div className={" relative flex-1 whitespace-nowrap overflow-hidden"}>
@@ -46,9 +100,9 @@ function ChatItem({item, selected, onSelected}: Props) {
                     {editing || deleting ? <>
                         <button onClick={e => {
                             if (deleting) {
-                                console.log("delete")
+                                deleteChat()
                             } else {
-                                console.log("edit")
+                                updateChat()
                             }
                             setDeleting(false);
                             setEditing(false)
