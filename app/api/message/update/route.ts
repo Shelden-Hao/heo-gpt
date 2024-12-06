@@ -1,9 +1,9 @@
 import prisma from "@/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
+import {NextRequest, NextResponse} from "next/server";
 
 export async function POST(request: NextRequest) {
     const body = await request.json()
-    const { id, ...data } = body
+    const {id, ...data} = body
     if (!data.chatId) {
         const chat = await prisma.chat.create({
             data: {
@@ -11,6 +11,15 @@ export async function POST(request: NextRequest) {
             }
         })
         data.chatId = chat.id
+    } else {
+        await prisma.chat.update({
+            where: {
+                id: data.chatId
+            },
+            data: {
+                updateTime: new Date()
+            }
+        })
     }
     const message = await prisma.message.upsert({
         create: data,
@@ -19,5 +28,5 @@ export async function POST(request: NextRequest) {
             id
         }
     })
-    return NextResponse.json({ code: 0, data: { message } })
+    return NextResponse.json({code: 0, data: {message}})
 }
