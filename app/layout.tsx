@@ -1,6 +1,7 @@
 import type {Metadata} from "next";
 import "../styles/globals.css";
 import AppContextProvider from "@/components/AppContext";
+import EventBusContextProvider from "@/components/EventBusContext";
 
 export const metadata: Metadata = {
   title: "XIU-GPT",
@@ -14,7 +15,11 @@ export default function RootLayout({
   return (
     <html lang="zh">
       <body>
-       <AppContextProvider>{children}</AppContextProvider>
+       <AppContextProvider>
+           <EventBusContextProvider>
+               {children}
+           </EventBusContextProvider>
+       </AppContextProvider>
       </body>
     </html>
   );

@@ -2,6 +2,7 @@ import Markdown from "@/components/common/Markdown"
 import {Message} from "@/types/chat"
 import {SiOpenai} from "react-icons/si"
 import {useAppContext} from "@/components/AppContext";
+import {useEventBusContext} from "@/components/EventBusContext";
 
 export default function MessageList() {
     // const messageList: Message[] = [
