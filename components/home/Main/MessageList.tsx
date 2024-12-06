@@ -33,6 +33,7 @@ export default function MessageList() {
     const {state: {messageList, streamingId, selectedChat}, dispatch} = useAppContext();
 
     async function getData(chatId: string) {
+        console.log("/api/message/list?chatId")
         const response = await fetch(`/api/message/list?chatId=${chatId}`, {
             method: "GET"
         })

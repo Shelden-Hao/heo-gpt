@@ -118,7 +118,7 @@ function ChatList() {
                         <ul>
                             {
                                 list.map(item => {
-                                    const selected = selectedChat === item
+                                    const selected = selectedChat?.id === item?.id
                                     return (
                                         <ChatItem key={item.id} item={item} selected={selected} onSelected={(chat) => {
                                             dispatch({

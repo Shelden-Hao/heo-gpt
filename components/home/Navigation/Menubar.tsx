@@ -9,7 +9,13 @@ function Menubar() {
     const {dispatch} = useAppContext()
     return (
         <div className="flex space-x-3">
-            <Button icon={HiPlus} variant="outline" className="flex-1">新建对话</Button>
+            <Button icon={HiPlus} variant="outline" className="flex-1" onClick={() => {
+                dispatch({
+                    type: ActionType.UPDATE,
+                    field: "selectedChat",
+                    value: null
+                })
+            }}>新建对话</Button>
             <Button icon={LuPanelLeft} variant="outline" onClick={() => {
                 dispatch({
                     type: ActionType.UPDATE,

@@ -1,24 +1,31 @@
 import Button from "@/components/common/Button"
-import {MdRefresh} from "react-icons/md"
 import {PiLightningFill, PiStopBold} from "react-icons/pi"
 import {FiSend} from "react-icons/fi"
 import TextareaAutoSize from "react-textarea-autosize"
-import {useRef, useState} from "react";
-import {v4 as uuidv4} from 'uuid';
+import {useEffect, useRef, useState} from "react";
 import {Message, MessageRequestBody} from "@/types/chat";
 import {useAppContext} from "@/components/AppContext";
 import {ActionType} from "@/reducers/AppReducers";
 import {useEventBusContext} from "@/components/EventBusContext";
+import {Simulate} from "react-dom/test-utils";
 
 export default function ChatInput() {
     const [messageText, setMessageText] = useState("")
     const stopRef = useRef(false);
     const chatIdRef = useRef("")
     const {
-        state: {messageList, currentModel, streamingId},
+        state: {messageList, currentModel, streamingId, selectedChat},
         dispatch
     } = useAppContext()
-    const { publish } = useEventBusContext()
+    const {publish} = useEventBusContext()
+
+    useEffect(() => {
+        if (chatIdRef.current === selectedChat?.id) {
+            return
+        }
+        chatIdRef.current = selectedChat?.id ?? ""
+        stopRef.current = true;
+    }, [selectedChat]);
 
     async function createOrUpdateMessage(message: Message) {
         const response = await fetch("/api/message/update", {
@@ -36,6 +43,11 @@ export default function ChatInput() {
         if (!chatIdRef.current) {
             chatIdRef.current = data.message.chatId;
             publish("chatList")
+            dispatch({
+                type: ActionType.UPDATE,
+                field: 'selectedChat',
+                value: {id: chatIdRef.current}
+            })
         }
         return data.message;
     }
@@ -51,7 +63,7 @@ export default function ChatInput() {
             console.log(response.statusText)
             return
         }
-        const { code } = await response.json()
+        const {code} = await response.json()
         return code === 0
     }
 
@@ -83,6 +95,7 @@ export default function ChatInput() {
     }
 
     async function doSend(messages: Message[]) {
+        stopRef.current = false;
         const body: MessageRequestBody = {messages, model: currentModel};
         setMessageText("")
         const controller = new AbortController()
@@ -116,7 +129,6 @@ export default function ChatInput() {
         let content = ''
         while (!done) {
             if (stopRef.current) {
-                stopRef.current = false
                 controller.abort()
                 break
             }
@@ -129,12 +141,11 @@ export default function ChatInput() {
                 message: {...responseMessage, content}
             })
         }
-        await createOrUpdateMessage({
+        createOrUpdateMessage({
             ...responseMessage,
             content
         })
         dispatch({type: ActionType.UPDATE, field: "streamingId", value: ""})
-        setMessageText("")
     }
 
     return (
