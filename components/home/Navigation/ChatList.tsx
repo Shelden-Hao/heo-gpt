@@ -76,21 +76,32 @@ function ChatList() {
     }, [chatList])
     const {subscribe, unsubscribe} = useEventBusContext()
     const {state: {selectedChat}, dispatch} = useAppContext()
+    const loadMoreRef = useRef(null);
+    const hasMoreRef = useRef(false)
+    const loadingRef = useRef(false)
 
     async function getData() {
-        const response = await fetch(`/api/chat/list?page=${pageRef.current}`, {
-            method: "GET"
-        })
-        if (!response.ok) {
-            console.log(response.statusText)
+        if (loadingRef.current) {
             return
         }
+        loadingRef.current = true
+        const response = await fetch(`/api/chat/list?page=${pageRef.current}`, {
+            method: "GET"
+        });
+        if (!response.ok) {
+            console.log(response.statusText)
+            loadingRef.current = false
+            return
+        }
+        pageRef.current++
         const {data} = await response.json()
+        hasMoreRef.current = data.hasMore
         if (pageRef.current === 1) {
             setChatList(data.list)
         } else {
             setChatList((list) => list.concat(data.list))
         }
+        loadingRef.current = false
     }
 
     useEffect(() => {
@@ -106,6 +117,25 @@ function ChatList() {
             unsubscribe('chatList', callback)
         }
     }, []);
+    // 监听是否加载到底部
+    useEffect(() => {
+        let observer: IntersectionObserver | null = null
+        let div = loadMoreRef.current
+        if (div) {
+            observer = new IntersectionObserver((entries) => {
+                // 判断该元素是否在可视范围内
+                if (entries[0].isIntersecting && hasMoreRef.current) {
+                    getData()
+                }
+            })
+            observer.observe(div)
+        }
+        return () => {
+            if (observer && div) {
+                observer.unobserve(div)
+            }
+        }
+    }, [])
 
     return (
         <div className={'flex-1 mb-[48px] mt-2 flex flex-col overflow-y-auto'}>
@@ -134,7 +164,7 @@ function ChatList() {
                     </div>
                 })
             }
-
+            <div ref={loadMoreRef}>&nbsp;</div>
         </div>
     );
 }
