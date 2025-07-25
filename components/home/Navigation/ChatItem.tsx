@@ -76,7 +76,7 @@ function ChatItem({item, selected, onSelected}: Props) {
                 onSelected(item)
             }}
             className={`group flex items-center p-3 space-x-3 cursor-pointer rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 ${
-                selected ? 'bg-gray-100 dark:bg-gray-800 pr-[3.5em]' : ''
+                selected ? 'bg-gray-100 dark:bg-gray-800' : ''
             }`} key={item.id}>
             <div>{ deleting ? <PiTrashBold /> : <PiChatBold/>}</div>
             { editing ? (
@@ -96,7 +96,7 @@ function ChatItem({item, selected, onSelected}: Props) {
                 </div>
             )}
             {selected && (
-                <div className={"absolute right-3 flex"}>
+                <div className={"flex"}>
                     {editing || deleting ? <>
                         <button onClick={e => {
                             if (deleting) {
