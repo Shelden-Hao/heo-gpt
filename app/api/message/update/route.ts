@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
             }
         })
     }
+    // upsert 方法就是用于创建或更新记录
     const message = await prisma.message.upsert({
         create: data,
         update: data,

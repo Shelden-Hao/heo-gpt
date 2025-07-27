@@ -13,6 +13,11 @@ export default function ModelSelect() {
             id: "gpt-4",
             name: "GPT-4",
             icon: PiShootingStarFill
+        },
+        {
+            id: "deepseek-chat",
+            name: "Deepseek",
+            icon: PiShootingStarFill
         }
     ]
     const {state: {currentModel}, dispatch} = useAppContext();
