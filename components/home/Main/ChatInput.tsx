@@ -67,7 +67,8 @@ export default function ChatInput() {
         return code === 0
     }
 
-    async function send() {
+    // 发送前处理
+    async function beforeSend() {
         const message: Message = await createOrUpdateMessage({
             id: "",
             role: "user",
@@ -76,9 +77,10 @@ export default function ChatInput() {
         })
         dispatch({type: ActionType.ADD_MESSAGE, message})
         const messages = messageList.concat([message]);
-        doSend(messages)
+        send(messages)
     }
 
+    // 重新发送
     async function resend() {
         const messages = [...messageList];
         const lastMessage = messages[messages.length - 1]
@@ -91,15 +93,16 @@ export default function ChatInput() {
             dispatch({type: ActionType.REMOVE_MESSAGE, message: lastMessage});
             messages.splice(messages.length - 1, 1)
         }
-        doSend(messages)
+        send(messages)
     }
 
-    async function doSend(messages: Message[]) {
+    // 发送
+    async function send(messages: Message[]) {
         stopRef.current = false;
         const body: MessageRequestBody = {messages, model: currentModel};
         setMessageText("")
         const controller = new AbortController()
-        const response = await fetch("/api/chat", {
+        const response = await fetch("/api/chat/openai", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -201,7 +204,7 @@ export default function ChatInput() {
                         disabled={
                             messageText.trim() === "" || streamingId !== ""
                         }
-                        onClick={send}
+                        onClick={beforeSend}
                     />
                 </div>
                 <footer className='text-center text-sm text-gray-700 dark:text-gray-300 px-4 pb-6'>
