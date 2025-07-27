@@ -15,8 +15,23 @@ const config: Config = {
                     600: '#059669'
                 }
             },
+            typography: {
+                DEFAULT: {
+                    css: {
+                        'thead th': {
+                            fontWeight: '600',
+                        },
+                        'tbody td, tbody th': {
+                            padding: '0.5rem 0.75rem',
+                        },
+                        'table': {
+                            borderCollapse: 'collapse',
+                        },
+                    },
+                },
+            },
         },
     },
-    plugins: [],
+    plugins: [require('@tailwindcss/typography')],
 };
 export default config;
