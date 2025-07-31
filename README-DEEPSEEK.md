@@ -33,17 +33,17 @@ npm run dev
 
 ### 测试 SILICONFLOW API
 
-1. **基本测试页面**：访问`/test-openai`查看基本的 DeepSeek 模型集成测试
+1. **基本测试页面**：访问`/test-openai`查看基本的 Chat 模型集成测试
 
 ## 开发者信息
 
 ### 相关文件
 
-- `lib/openai.ts`：DeepSeek API 集成的核心实现
-- `app/api/chat/openai/route.ts`：处理 DeepSeek 聊天请求的 API 路由
+- `lib/openai.ts`：Chat API 集成的核心实现
+- `app/api/chat/openai/route.ts`：处理 Chat 聊天请求的 API 路由
 
 ### 相关文档
 
-openai 规范调用大模型可以参考 deepseek文档：https://api-docs.deepseek.com/zh-cn/
+openai 规范调用大模型可以参考 Chat文档：https://api-docs.Chat.com/zh-cn/
 
 也可以参考硅基流动的文档：https://docs.siliconflow.cn/cn/userguide/quickstart
