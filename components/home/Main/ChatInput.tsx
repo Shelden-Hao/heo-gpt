@@ -6,8 +6,7 @@ import {useEffect, useRef, useState} from "react";
 import {Message, MessageRequestBody} from "@/types/chat";
 import {useAppContext} from "@/components/AppContext";
 import {ActionType} from "@/reducers/AppReducers";
-import {useEventBusContext} from "@/components/EventBusContext";
-import {Simulate} from "react-dom/test-utils";
+import {EventListener, useEventBusContext} from "@/components/EventBusContext";
 
 export default function ChatInput() {
     const [messageText, setMessageText] = useState("")
@@ -17,7 +16,7 @@ export default function ChatInput() {
         state: {messageList, currentModel, streamingId, selectedChat},
         dispatch
     } = useAppContext()
-    const {publish} = useEventBusContext()
+    const {publish, subscribe, unsubscribe} = useEventBusContext()
 
     useEffect(() => {
         if (chatIdRef.current === selectedChat?.id) {
@@ -26,6 +25,16 @@ export default function ChatInput() {
         chatIdRef.current = selectedChat?.id ?? ""
         stopRef.current = true;
     }, [selectedChat]);
+
+    useEffect(() => {
+        const callback: EventListener = (data: string) => {
+            beforeSend(data)
+        }
+        subscribe("createNewChat", callback)
+        return () => {
+            unsubscribe("createNewChat", callback)
+        }
+    }, [])
 
     async function createOrUpdateMessage(message: Message) {
         const response = await fetch("/api/message/update", {
@@ -68,16 +77,80 @@ export default function ChatInput() {
     }
 
     // 发送前处理
-    async function beforeSend() {
+    async function beforeSend(content: string) {
         const message: Message = await createOrUpdateMessage({
             id: "",
             role: "user",
-            content: messageText,
+            content,
             chatId: chatIdRef.current
         })
         dispatch({type: ActionType.ADD_MESSAGE, message})
         const messages = messageList.concat([message]);
         send(messages)
+        // 如果对话没有标题，则根据第一个问题设置标题
+        if (!selectedChat?.title || selectedChat.title === '新对话') {
+            updateChatTitle(messages)
+        }
+    }
+
+    // 更新对话标题
+    async function updateChatTitle(messages: Message[]) {
+        const message: Message = {
+            id: '',
+            role: 'user',
+            content: "使用5到10个字直接返回这句话的简要主题，不要解释、不要标点、不要语气词、不要多余文本，如果没有主题，请直接返回'新对话'",
+            chatId: chatIdRef.current
+        }
+        const body: MessageRequestBody = {
+          messages: [...messages, message],
+          model: currentModel,
+        };
+        let response = await fetch("/api/chat/openai", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body)
+        })
+        if (!response.ok) {
+            console.log(response.statusText)
+            return
+        }
+        if (!response.body) {
+            console.log("body error")
+            return
+        }
+        const reader = response.body.getReader()
+        const decoder = new TextDecoder()
+        // 避免在接收消息过程中切换对话导致id错误，所以这里使用一个变量来存储当前的对话id
+        const chatId = chatIdRef.current
+        let done = false
+        let title = ""
+        while (!done) {
+            const result = await reader.read()
+            done = result.done
+            const chunk = decoder.decode(result.value)
+            title += chunk;
+        }
+        response = await fetch("/api/chat/update", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                id: chatId,
+                title: title,
+            }),
+        });
+        if (!response.ok) {
+            console.log(response.statusText)
+            return
+        }
+        const { code } = await response.json()
+        if (code === 0) {
+            publish("chatList")
+            dispatch({type: ActionType.UPDATE, field: 'selectedChat', value: {id: chatId, title}})
+        }
     }
 
     // 重新发送
@@ -204,7 +277,7 @@ export default function ChatInput() {
                         disabled={
                             messageText.trim() === "" || streamingId !== ""
                         }
-                        onClick={beforeSend}
+                        onClick={() => beforeSend(messageText)}
                     />
                 </div>
                 <footer className='text-center text-sm text-gray-700 dark:text-gray-300 px-4 pb-6'>
