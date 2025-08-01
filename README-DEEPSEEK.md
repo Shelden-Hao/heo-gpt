@@ -33,7 +33,7 @@ npm run dev
 
 ### 测试 SILICONFLOW API
 
-1. **基本测试页面**：访问`/test-openai`查看基本的 Chat 模型集成测试
+1. **基本测试页面**：访问`/test-chat`查看基本的 Chat 模型集成测试
 
 ## 开发者信息
 

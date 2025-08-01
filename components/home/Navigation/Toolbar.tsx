@@ -25,7 +25,7 @@ function Toolbar() {
               });
             }}
           />
-          <a href="/test-openai" target="_blank" rel="noopener noreferrer">
+          <a href="/test-chat" target="_blank" rel="noopener noreferrer">
             <Button icon={IoIosChatboxes} variant="text" title="测试CHAT" />
           </a>
           <a href="/test-image" target="_blank" rel="noopener noreferrer">
