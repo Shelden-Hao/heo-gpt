@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 
 export default function TestImageGeneration() {
   const [prompt, setPrompt] = useState('');
@@ -82,7 +83,7 @@ export default function TestImageGeneration() {
       {imageUrl && (
         <div className="mt-4">
           <h2 className="text-xl font-bold mb-2">生成的图片:</h2>
-          <img src={imageUrl} alt="Generated Image" className="max-w-full h-auto rounded-lg" />
+          <Image src={imageUrl} width={500} height={500} alt="Generated Image" className="max-w-full h-auto rounded-lg" />
         </div>
       )}
     </div>
